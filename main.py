@@ -1,30 +1,3 @@
-# If the following square looks like random characters, do NOT use `printSudokuUnicode`, use `printSudokuAscii` instead
-#
-#          Unicode square
-#         ╔═══╤═══╦═══╤═══╗
-#         ║   │   ║   │   ║
-#         ╟───┼───╫───┼───╢
-#         ║   │   ║   │   ║
-#         ╠═══╪═══╬═══╪═══╣
-#         ║   │   ║   │   ║
-#         ╟───┼───╫───┼───╢
-#         ║   │   ║   │   ║
-#         ╚═══╧═══╩═══╧═══╝
-#
-# The following square, instead, should look readable but a bit rough
-#
-#            Ascii square
-#         +---+---+---+---+
-#         |   :   |   :   |
-#         + - + - + - + - +
-#         |   :   |   :   |
-#         +---+---+---+---+
-#         |   :   |   :   |
-#         + - + - + - + - +
-#         |   :   |   :   |
-#         +---+---+---+---+
-#
-
 import math
 import time
 
@@ -70,84 +43,7 @@ sameRowCells = {i: _sameRowCells(i) for i in range(N**2)}
 sameColCells = {i: _sameColCells(i) for i in range(N**2)}
 sameBoxCells = {i: _sameBoxCells(i) for i in range(N**2)}
 
-
-def printSudokuUnicode(sudoku: list[int]):
-    # ╔═══╤═══╦═══╤═══╗
-    # ║   │   ║   │   ║
-    # ╟───┼───╫───┼───╢
-    # ║   │   ║   │   ║
-    # ╠═══╪═══╬═══╪═══╣
-    # ║   │   ║   │   ║
-    # ╟───┼───╫───┼───╢
-    # ║   │   ║   │   ║
-    # ╚═══╧═══╩═══╧═══╝
-    topLine = "╔"
-    midThin = "╟"
-    midBold = "╠"
-    btmLine = "╚"
-    for i in range(SQRT_N):
-        for j in range(SQRT_N):
-            if j != SQRT_N - 1:
-                topLine += "═══╤"
-                midThin += "───┼"
-                midBold += "═══╪"
-                btmLine += "═══╧"
-            elif i != SQRT_N - 1:
-                topLine += "═══╦"
-                midThin += "───╫"
-                midBold += "═══╬"
-                btmLine += "═══╩"
-            else:
-                topLine += "═══╗"
-                midThin += "───╢"
-                midBold += "═══╣"
-                btmLine += "═══╝"
-
-    print(topLine)
-    for y in range(N):
-        print("║", end="")
-        for x in range(N):
-            i = _pos2index(x, y)
-            val = sudoku[i] or " "
-            end = "║" if x % SQRT_N == SQRT_N - 1 else "│"
-            print(f" {val} ", end=end)
-        print()
-
-        if y % SQRT_N != SQRT_N - 1:
-            print(midThin)
-        elif y != N - 1:
-            print(midBold)
-        else:
-            print(btmLine)
-
-
-def printSudokuAscii(sudoku: list[int]):
-    # +---+---+---+---+
-    # |   :   |   :   |
-    # + - + - + - + - +
-    # |   :   |   :   |
-    # +---+---+---+---+
-    # |   :   |   :   |
-    # + - + - + - + - +
-    # |   :   |   :   |
-    # +---+---+---+---+
-    boldLine = "+" + ("---+" * N)
-    thinLine = "+" + (" - +" * N)
-
-    print(boldLine)
-    for y in range(N):
-        print("|", end="")
-        for x in range(N):
-            i = _pos2index(x, y)
-            val = sudoku[i] or " "
-            vert = "|" if x % SQRT_N == SQRT_N - 1 else ":"
-            print(f" {val} {vert}", end="")
-        print()
-
-        if y % SQRT_N != SQRT_N - 1:
-            print(thinLine)
-        else:
-            print(boldLine)
+CSV_HEADER_ROW_COL = ",".join([f"r{r + 1}c{c + 1}" for r in range(N) for c in range(N)])
 
 
 def findSolutions(sudoku: list[int], curr: int) -> list[list[int]]:
@@ -175,20 +71,28 @@ def findSolutions(sudoku: list[int], curr: int) -> list[list[int]]:
 # Genuinely empty sudoku, counts permutations of digits
 emptySudoku = [0] * (N**2)
 
-
 allSolutions = findSolutions(emptySudoku, 0)
+with open("all-solutions.csv", "w", encoding="utf-8") as f:
+    lines = [CSV_HEADER_ROW_COL]
+    for sudoku in allSolutions:
+        lines.append(",".join([str(v) for v in sudoku]))
+    f.write("\n".join(lines))
 print("Number of total solutions:", len(allSolutions))
 
 # Empty sudoku with arbitrary fixed first row, does counts only truly distinct solutions
 emptySudoku[0:N] = [value for value in range(1, N + 1)]
+
 distinctSolutions = findSolutions(emptySudoku, N)
-for solution in distinctSolutions:
-    printSudokuAscii(solution)
+with open("distinct-solutions.csv", "w", encoding="utf-8") as f:
+    lines = [CSV_HEADER_ROW_COL]
+    for sudoku in distinctSolutions:
+        lines.append(",".join([str(v) for v in sudoku]))
+    f.write("\n".join(lines))
 print("Number of distinct solutions:", len(distinctSolutions))
 
-allPuzzles = 0
+allPuzzlesPerSolution: list[list[int]] = []
 start = time.time()
-for k, solution in enumerate(allSolutions):
+for i, solution in enumerate(allSolutions):
     cellToPosibleSolutions = [
         # For each cell c, precompute all the solutions that have value solution[c] in cell c
         {j for (j, other) in enumerate(allSolutions) if (other[c] == solution[c])}
@@ -205,11 +109,11 @@ for k, solution in enumerate(allSolutions):
     # However, getting an actual valid upperbound seems not so simple
     # masks = [i for i in range(2 ** (N**2)) if N - 1 <= i.bit_count() <= (N**2) / 2]
     for subsetMask in range(1, 2 ** (N**2)):
-        subset = {i for i in range(N**2) if (subsetMask & (1 << i))}
+        subset = {b for b in range(N**2) if (subsetMask & (1 << b))}
         possibleSolutions = set.intersection(
-            *[cellToPosibleSolutions[i] for i in subset]
+            *[cellToPosibleSolutions[c] for c in subset]
         )
-        if possibleSolutions != {k}:
+        if possibleSolutions != {i}:
             continue
 
         isMinimal = True
@@ -222,10 +126,64 @@ for k, solution in enumerate(allSolutions):
         puzzles.append(subsetMask)
 
     end = time.time()
-    allPuzzles += len(puzzles)
-    print(
-        f"\r{k + 1:03}/{len(allSolutions)}, elapsed time: {(end - start):.2f}s", end=""
-    )
+    allPuzzlesPerSolution.append(puzzles)
 
-print()
-print("Number of possible puzzles:", allPuzzles)
+    print(
+        f"\r{i + 1:03}/{len(allSolutions)}, elapsed time: {(end - start):.2f}s", end=""
+    )
+print("\r\x1b[K")  # clear last progress line
+
+with open("all-puzzles.csv", "w", encoding="utf-8") as f:
+    lines = ["solIndex," + CSV_HEADER_ROW_COL]
+
+    for i in range(len(allPuzzlesPerSolution)):
+        solution = allSolutions[i]
+        puzzles = allPuzzlesPerSolution[i]
+        for puzzleMask in puzzles:
+            solStr = f"{i + 1:03}"
+            puzzle = [
+                solution[b] if (puzzleMask & (1 << b)) else 0 for b in range(N**2)
+            ]
+            puzzleStr = [str(val) for val in puzzle]
+            lines.append(",".join([solStr] + puzzleStr))
+    f.write("\n".join(lines))
+
+print(
+    "Number of possible puzzles:",
+    sum([len(allPuzzlesPerSolution[i]) for i in range(len(allPuzzlesPerSolution))]),
+)
+
+# Note! By construction of how we do the recursion in `findSolutions`, the first
+# #len(distinctSolutions) solutions in allSolutions are actually the solutions starting with
+# `1 2 ... N` in the first row (recursion goes cell by cell left-to-right top-to-bottom, and the
+# recursion on each possible value has the same order of the actual values)
+# This means that the first #len(distinctSolutions) in allPuzzles are actually the puzzles for the
+# distinct solutions, meaning that they are all the puzzles up to permutations.
+distinctPuzzlesPerSolution = [
+    allPuzzlesPerSolution[i] for i in range(len(distinctSolutions))
+]
+
+with open("distinct-puzzles.csv", "w", encoding="utf-8") as f:
+    lines = ["solIndex," + CSV_HEADER_ROW_COL]
+
+    for i in range(len(distinctPuzzlesPerSolution)):
+        solution = distinctSolutions[i]
+        puzzles = distinctPuzzlesPerSolution[i]
+        for puzzleMask in puzzles:
+            solStr = f"{i + 1:03}"
+            puzzle = [
+                solution[b] if (puzzleMask & (1 << b)) else 0 for b in range(N**2)
+            ]
+            puzzleStr = [str(val) for val in puzzle]
+            lines.append(",".join([solStr] + puzzleStr))
+    f.write("\n".join(lines))
+
+print(
+    "Number of distinct puzzles:",
+    sum(
+        [
+            len(distinctPuzzlesPerSolution[i])
+            for i in range(len(distinctPuzzlesPerSolution))
+        ]
+    ),
+)
