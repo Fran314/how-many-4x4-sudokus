@@ -84,9 +84,7 @@ print("Number of total solutions:", len(allSolutions))
 # However, since we have already computer ALL the possible solutions, we can
 # just take from these only the ones that already start with [1, 2, ..., N],
 # as follows
-distinctSolutions = [
-    solution for solution in allSolutions if solution[0:N] == list(range(1, N + 1))
-]
+distinctSolutions = [sol for sol in allSolutions if sol[0:N] == list(range(1, N + 1))]
 print("Number of distinct solutions:", len(distinctSolutions))
 
 allPuzzlesPerSolution: list[list[int]] = []
