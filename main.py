@@ -1,5 +1,6 @@
 import math
 import time
+import csv
 
 N = 4
 SQRT_N = int(math.sqrt(N))
@@ -70,22 +71,22 @@ def findSolutions(sudoku: list[int], curr: int) -> list[list[int]]:
 emptySudoku = [0] * (N**2)
 
 allSolutions = findSolutions(emptySudoku, 0)
-with open("all-solutions.csv", "w", encoding="utf-8") as f:
-    lines = []
-    for sudoku in allSolutions:
-        lines.append(",".join([str(v) for v in sudoku]))
-    f.write("\n".join(lines))
 print("Number of total solutions:", len(allSolutions))
 
-# Empty sudoku with arbitrary fixed first row, does counts only truly distinct solutions
-emptySudoku[0:N] = [value for value in range(1, N + 1)]
-
-distinctSolutions = findSolutions(emptySudoku, N)
-with open("distinct-solutions.csv", "w", encoding="utf-8") as f:
-    lines = []
-    for sudoku in distinctSolutions:
-        lines.append(",".join([str(v) for v in sudoku]))
-    f.write("\n".join(lines))
+# In theory, we could evaluate all the distinct solutions by fixing the values
+# of the first row of the empty sudoku to be [1, 2, ..., N], like so:
+# ```python
+# # Empty sudoku with arbitrary fixed first row, does counts only truly distinct solutions
+# emptySudoku[0:N] = [value for value in range(1, N + 1)]
+# distinctSolutions = findSolutions(emptySudoku, N)
+# ```
+#
+# However, since we have already computer ALL the possible solutions, we can
+# just take from these only the ones that already start with [1, 2, ..., N],
+# as follows
+distinctSolutions = [
+    solution for solution in allSolutions if solution[0:N] == list(range(1, N + 1))
+]
 print("Number of distinct solutions:", len(distinctSolutions))
 
 allPuzzlesPerSolution: list[list[int]] = []
@@ -129,22 +130,8 @@ for i, solution in enumerate(allSolutions):
     print(
         f"\r{i + 1:03}/{len(allSolutions)}, elapsed time: {(end - start):.2f}s", end=""
     )
-print("\r\x1b[K")  # clear last progress line
-
-with open("all-puzzles.csv", "w", encoding="utf-8") as f:
-    lines = []
-
-    for i in range(len(allPuzzlesPerSolution)):
-        solution = allSolutions[i]
-        puzzles = allPuzzlesPerSolution[i]
-        for puzzleMask in puzzles:
-            solStr = f"{i + 1:03}"
-            puzzle = [
-                solution[b] if (puzzleMask & (1 << b)) else 0 for b in range(N**2)
-            ]
-            puzzleStr = [str(val) for val in puzzle]
-            lines.append(",".join([solStr] + puzzleStr))
-    f.write("\n".join(lines))
+# print("\r\x1b[K", end="")  # clear last progress line
+print()
 
 print(
     "Number of possible puzzles:",
@@ -161,21 +148,6 @@ distinctPuzzlesPerSolution = [
     allPuzzlesPerSolution[i] for i in range(len(distinctSolutions))
 ]
 
-with open("distinct-puzzles.csv", "w", encoding="utf-8") as f:
-    lines = []
-
-    for i in range(len(distinctPuzzlesPerSolution)):
-        solution = distinctSolutions[i]
-        puzzles = distinctPuzzlesPerSolution[i]
-        for puzzleMask in puzzles:
-            solStr = f"{i + 1:03}"
-            puzzle = [
-                solution[b] if (puzzleMask & (1 << b)) else 0 for b in range(N**2)
-            ]
-            puzzleStr = [str(val) for val in puzzle]
-            lines.append(",".join([solStr] + puzzleStr))
-    f.write("\n".join(lines))
-
 print(
     "Number of distinct puzzles:",
     sum(
@@ -185,3 +157,35 @@ print(
         ]
     ),
 )
+
+# === WRITE ===
+with open("all-solutions.csv", "w", encoding="utf-8") as f:
+    writer = csv.writer(f, lineterminator="\n")
+    writer.writerows(allSolutions)
+
+with open("distinct-solutions.csv", "w", encoding="utf-8") as f:
+    writer = csv.writer(f, lineterminator="\n")
+    writer.writerows(distinctSolutions)
+
+
+with open("all-puzzles.csv", "w", encoding="utf-8") as f:
+    writer = csv.writer(f, lineterminator="\n")
+    for i in range(len(allPuzzlesPerSolution)):
+        solution = allSolutions[i]
+        puzzles = allPuzzlesPerSolution[i]
+        for puzzleMask in puzzles:
+            puzzle = [
+                solution[b] if (puzzleMask & (1 << b)) else 0 for b in range(N**2)
+            ]
+            writer.writerow([f"{i:03}"] + puzzle)
+
+with open("distinct-puzzles.csv", "w", encoding="utf-8") as f:
+    writer = csv.writer(f, lineterminator="\n")
+    for i in range(len(distinctPuzzlesPerSolution)):
+        solution = distinctSolutions[i]
+        puzzles = distinctPuzzlesPerSolution[i]
+        for puzzleMask in puzzles:
+            puzzle = [
+                solution[b] if (puzzleMask & (1 << b)) else 0 for b in range(N**2)
+            ]
+            writer.writerow([f"{i:03}"] + puzzle)
