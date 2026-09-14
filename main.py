@@ -43,8 +43,6 @@ sameRowCells = {i: _sameRowCells(i) for i in range(N**2)}
 sameColCells = {i: _sameColCells(i) for i in range(N**2)}
 sameBoxCells = {i: _sameBoxCells(i) for i in range(N**2)}
 
-CSV_HEADER_ROW_COL = ",".join([f"r{r + 1}c{c + 1}" for r in range(N) for c in range(N)])
-
 
 def findSolutions(sudoku: list[int], curr: int) -> list[list[int]]:
     if curr == N**2:  # No cells remaining to be filled, solution found
@@ -73,7 +71,7 @@ emptySudoku = [0] * (N**2)
 
 allSolutions = findSolutions(emptySudoku, 0)
 with open("all-solutions.csv", "w", encoding="utf-8") as f:
-    lines = [CSV_HEADER_ROW_COL]
+    lines = []
     for sudoku in allSolutions:
         lines.append(",".join([str(v) for v in sudoku]))
     f.write("\n".join(lines))
@@ -84,7 +82,7 @@ emptySudoku[0:N] = [value for value in range(1, N + 1)]
 
 distinctSolutions = findSolutions(emptySudoku, N)
 with open("distinct-solutions.csv", "w", encoding="utf-8") as f:
-    lines = [CSV_HEADER_ROW_COL]
+    lines = []
     for sudoku in distinctSolutions:
         lines.append(",".join([str(v) for v in sudoku]))
     f.write("\n".join(lines))
@@ -134,7 +132,7 @@ for i, solution in enumerate(allSolutions):
 print("\r\x1b[K")  # clear last progress line
 
 with open("all-puzzles.csv", "w", encoding="utf-8") as f:
-    lines = ["solIndex," + CSV_HEADER_ROW_COL]
+    lines = []
 
     for i in range(len(allPuzzlesPerSolution)):
         solution = allSolutions[i]
@@ -164,7 +162,7 @@ distinctPuzzlesPerSolution = [
 ]
 
 with open("distinct-puzzles.csv", "w", encoding="utf-8") as f:
-    lines = ["solIndex," + CSV_HEADER_ROW_COL]
+    lines = []
 
     for i in range(len(distinctPuzzlesPerSolution)):
         solution = distinctSolutions[i]
