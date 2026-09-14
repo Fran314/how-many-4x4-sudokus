@@ -202,7 +202,7 @@ with open("distinct-solutions.unicode.txt", "w") as f:
     output = groupStrSudokus(solutionsStrUnicode, 6)
     f.write(output)
 
-with open("all-puzles.ascii.txt", "w") as f:
+with open("all-puzzles.ascii.txt", "w") as f:
     for i in allPuzzlesPerSolution:
         solution = allSolutions[i]
         puzzles = allPuzzlesPerSolution[i]
@@ -219,7 +219,7 @@ with open("all-puzles.ascii.txt", "w") as f:
         if i < len(allPuzzlesPerSolution) - 1:
             f.write("\n\n")
 
-with open("all-puzles.unicode.txt", "w") as f:
+with open("all-puzzles.unicode.txt", "w") as f:
     for i in allPuzzlesPerSolution:
         solution = allSolutions[i]
         puzzles = allPuzzlesPerSolution[i]
@@ -236,7 +236,7 @@ with open("all-puzles.unicode.txt", "w") as f:
         if i < len(allPuzzlesPerSolution) - 1:
             f.write("\n\n")
 
-with open("distinct-puzles.ascii.txt", "w") as f:
+with open("distinct-puzzles.ascii.txt", "w") as f:
     for i in distinctPuzzlesPerSolution:
         solution = distinctSolutions[i]
         puzzles = distinctPuzzlesPerSolution[i]
@@ -254,7 +254,7 @@ with open("distinct-puzles.ascii.txt", "w") as f:
             f.write("\n\n")
 
 
-with open("distinct-puzles.unicode.txt", "w") as f:
+with open("distinct-puzzles.unicode.txt", "w") as f:
     for i in distinctPuzzlesPerSolution:
         solution = distinctSolutions[i]
         puzzles = distinctPuzzlesPerSolution[i]
